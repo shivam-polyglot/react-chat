@@ -1,45 +1,25 @@
 import React from "react";
-import Avatar from "./Avatar";
-import { auth } from "../firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-
-// Show only the first name in the chat for privacy in this demo app.
-const getFirstName = fullName => {
-  if (!fullName) {
-    return "Anonymous";
-  }
-  return fullName.trim().split(" ")[0];
-};
 
 const Message = ({ message }) => {
-  const [user] = useAuthState(auth);
   const messageTime = message?.createdAt?.toDate
-    ? new Intl.DateTimeFormat("en-US", {
+    ? new Intl.DateTimeFormat("en-IN", {
         hour: "numeric",
         minute: "2-digit",
-        month: "short",
         day: "numeric",
+        month: "short",
       }).format(message.createdAt.toDate())
     : "";
 
   return (
-    <div className={`chat-bubble ${message.uid === user?.uid ? "right" : ""}`}>
-      <Avatar
-        photoURL={message.avatar}
-        name={message.name}
-        size={38}
-        className="chat-bubble__left"
-      />
+    <div className="chat-bubble">
       <div className="chat-bubble__right">
-        <p className="user-name">{getFirstName(message.name)}</p>
+        <p className="user-name">{message.name || "Anonymous"}</p>
         <p className="user-message">{message.text}</p>
-        {messageTime ? (
-          <time
-            className="message-time"
-            dateTime={message.createdAt.toDate().toISOString()}>
+        {messageTime && (
+          <time className="message-time">
             {messageTime}
           </time>
-        ) : null}
+        )}
       </div>
     </div>
   );
