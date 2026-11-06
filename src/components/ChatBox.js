@@ -9,78 +9,84 @@ import {
 import { db } from "../firebase";
 import Message from "./Message";
 import SendMessage from "./SendMessage";
-import CopyCode from "./CopyCode";
 
 const ChatBox = ({ activeRoom }) => {
   const [messages, setMessages] = useState([]);
+  const [senderName, setSenderName] = useState(
+    localStorage.getItem("chatSenderName") || ""
+  );
   const messagesRef = useRef(null);
 
-  const roomLabel = useMemo(() => {
-    if (!activeRoom?.name) {
-      return "Select a room";
-    }
-    return `${activeRoom.name}${activeRoom.isPrivate ? " · Private" : ""}`;
-  }, [activeRoom]);
+  const roomLabel = useMemo(
+    () => activeRoom?.name || "Our Chat",
+    [activeRoom]
+  );
 
   useEffect(() => {
-    if (!activeRoom?.id) {
-      setMessages([]);
-      return undefined;
-    }
+    if (!activeRoom?.id) return;
 
     const q = query(
       collection(db, "rooms", activeRoom.id, "messages"),
       orderBy("createdAt", "desc"),
-      limit(50),
+      limit(50)
     );
 
     const unsubscribe = onSnapshot(q, snapshot => {
-      const fetchedMessages = snapshot.docs
-        .map(docSnapshot => ({
-          ...docSnapshot.data(),
-          id: docSnapshot.id,
-        }))
-        .reverse();
-      setMessages(fetchedMessages);
+      setMessages(
+        snapshot.docs
+          .map(doc => ({ ...doc.data(), id: doc.id }))
+          .reverse()
+      );
     });
 
     return () => unsubscribe();
   }, [activeRoom?.id]);
 
   useEffect(() => {
-    // Scroll the message list itself to the bottom — not the whole window.
     const el = messagesRef.current;
     if (el) {
       el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     }
   }, [messages]);
 
+  const chooseName = name => {
+    localStorage.setItem("chatSenderName", name);
+    setSenderName(name);
+  };
+
   return (
     <main className="chat-box">
       <header className="chat-box__header">
-        <div>
-          <h2>{roomLabel}</h2>
-          <p>Share updates and keep the conversation moving.</p>
-        </div>
-        {activeRoom?.isPrivate && activeRoom?.joinCode && (
-          <div className="chat-box__code">
-            <span className="chat-box__code-label">Room code</span>
-            <CopyCode code={activeRoom.joinCode} />
-          </div>
-        )}
+        <h2>{roomLabel} ❤️</h2>
+        <p>Our own little conversation.</p>
       </header>
-      <div className="messages-wrapper" ref={messagesRef}>
-        {messages.length ? (
-          messages.map(message => (
-            <Message key={message.id} message={message} />
-          ))
-        ) : (
-          <div className="messages-empty">
-            <p>No messages yet. Start the conversation.</p>
+
+      {!senderName ? (
+        <div className="messages-empty">
+          <p>Who is using the chat?</p>
+          <button onClick={() => chooseName("Satyam")}>Satyam</button>
+          <button onClick={() => chooseName("Her")}>Her</button>
+        </div>
+      ) : (
+        <>
+          <div className="messages-wrapper" ref={messagesRef}>
+            {messages.length ? (
+              messages.map(message => (
+                <Message key={message.id} message={message} />
+              ))
+            ) : (
+              <div className="messages-empty">
+                <p>No messages yet. Start the conversation.</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      <SendMessage roomId={activeRoom?.id} />
+
+          <SendMessage
+            roomId={activeRoom?.id}
+            senderName={senderName}
+          />
+        </>
+      )}
     </main>
   );
 };
