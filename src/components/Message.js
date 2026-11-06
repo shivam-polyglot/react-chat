@@ -13,7 +13,12 @@ const Message = ({ message }) => {
   return (
     <div className="chat-bubble">
       <div className="chat-bubble__right">
-        <p className="user-name">{message.name || "Anonymous"}</p>
+        <p className="user-name">
+           {["Satyam", "Shivam"].includes(message.name)
+           ? "Patidev ❤️"
+           : message.name === "Sweety"
+           ? "Sweety 💗"
+           : message.name || "Anonymous"}
         </p>
         <p className="user-message">{message.text}</p>
         {messageTime && (
