@@ -64,8 +64,8 @@ const ChatBox = ({ activeRoom }) => {
       {!senderName ? (
         <div className="messages-empty">
           <p>Who is using the chat?</p>
-          <button onClick={() => chooseName("Satyam")}>Satyam</button>
-          <button onClick={() => chooseName("Her")}>Her</button>
+          <button onClick={() => chooseName("Shivam")}>Satyam</button>
+          <button onClick={() => chooseName("Sweety")}>Her</button>
         </div>
       ) : (
         <>
